@@ -1,0 +1,7 @@
+build/
+dist/
+*.spec
+__pycache__/
+installer_output/
+*.db
+!/app_icon.ico
