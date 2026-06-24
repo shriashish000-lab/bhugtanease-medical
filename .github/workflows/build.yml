@@ -1,0 +1,75 @@
+name: Build BhugtanEase Medical Windows Installer
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List repo files (debug)
+        run: dir
+
+      # 32-bit Python so the EXE runs on Windows 7/8/10/11, both
+      # 32-bit and 64-bit editions (a 64-bit EXE will NOT run on 32-bit Windows).
+      - name: Set up Python 3.8 (32-bit)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8.10'
+          architecture: 'x86'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onefile --windowed `
+            --name "BhugtanEase_Medical" `
+            --icon "app_icon.ico" `
+            BhugtanEase_Medical.pyw
+
+      - name: Verify EXE was created
+        run: |
+          if (!(Test-Path "dist\BhugtanEase_Medical.exe")) {
+            throw "EXE build failed - file not found"
+          }
+          Write-Host "EXE built successfully:"
+          Get-Item "dist\BhugtanEase_Medical.exe" | Format-List
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup -y --no-progress
+
+      - name: Compile Installer with Inno Setup
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "BhugtanEaseMedical.iss"
+
+      - name: Verify installer was created
+        run: |
+          if (!(Test-Path "installer_output\BhugtanEase_Medical_Setup.exe")) {
+            throw "Installer build failed - file not found"
+          }
+          Write-Host "Installer built successfully:"
+          Get-Item "installer_output\BhugtanEase_Medical_Setup.exe" | Format-List
+
+      - name: Upload Setup EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BhugtanEase_Medical_Setup
+          path: installer_output\BhugtanEase_Medical_Setup.exe
+          retention-days: 90
+
+      - name: Upload raw app EXE artifact (no installer)
+        uses: actions/upload-artifact@v4
+        with:
+          name: BhugtanEase_Medical_RawEXE
+          path: dist\BhugtanEase_Medical.exe
+          retention-days: 90
