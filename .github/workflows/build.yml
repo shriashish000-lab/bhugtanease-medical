@@ -8,13 +8,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: List repo files (debug)
         run: dir
       # 32-bit Python so the EXE runs on Windows 7/8/10/11, both
       # 32-bit and 64-bit editions (a 64-bit EXE will NOT run on 32-bit Windows).
       - name: Set up Python 3.8 (32-bit)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.8.10'
           architecture: 'x86'
@@ -51,13 +51,13 @@ jobs:
           Write-Host "Installer built successfully:"
           Get-Item "installer_output\BhugtanEase_Medical_Setup.exe" | Format-List
       - name: Upload Setup EXE artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: BhugtanEase_Medical_Setup
           path: installer_output\BhugtanEase_Medical_Setup.exe
           retention-days: 90
       - name: Upload raw app EXE artifact (no installer)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: BhugtanEase_Medical_RawEXE
           path: dist\BhugtanEase_Medical.exe
